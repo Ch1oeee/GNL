@@ -6,7 +6,7 @@
 /*   By: cmontaig <cmontaig@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/26 14:24:35 by cmontaig          #+#    #+#             */
-/*   Updated: 2024/12/04 16:50:13 by cmontaig         ###   ########.fr       */
+/*   Updated: 2024/12/07 05:20:05 by cmontaig         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,9 +34,11 @@ char	*one_line(char *buffer)
 	char	*line;
 
 	i = 0;
+	if (!buffer[i])
+		return (NULL);
 	while (buffer[i] && buffer[i] != '\n')
 		i++;
-	line = ft_calloc(sizeof(char), i + 1);
+	line = ft_calloc(sizeof(char), i + 2);
 	if(!line)
 		return(NULL);
 	i = 0;
@@ -45,8 +47,10 @@ char	*one_line(char *buffer)
 		line[i] = buffer[i];
 		i++;
 	}
-	if (buffer[i] && buffer[i] == '\n')
-		line[i] = buffer[i];
+	if (buffer[i]  == '\n')
+		line[i++] = '\n';
+	line[i] = '\0';
+	// printf("one line return :%s\n", line);
 	return (line);
 }
 
@@ -57,21 +61,40 @@ char	*lines_after(char *buffer)
 	char	*line_after;
 
 	i = 0;
-	j = 0;
+	if (!buffer)
+		return (NULL);
 	while (buffer[i] && buffer[i] != '\n')
 		i++;
+	if (!buffer[i])
+	{
+		free(buffer);
+		return (NULL);
+	}
 	line_after = ft_calloc(sizeof(char), ft_strlen(buffer) - i + 1);
 	if(!line_after)
-		return(0);
-	i++;
-	while (buffer[i] && buffer[i] != '\n')
 	{
-		line_after[j++] = buffer[i++];
+		free(buffer);
+		return (NULL);
 	}
-	if (buffer[i] && buffer[i] == '\n')
-		line_after[j] = buffer[i];
+	i++;
+	j = 0;
+	while (buffer[i])
+		line_after[j++] = buffer[i++];
+	line_after[j] = '\0';
+	//printf("line after : %s\n", line_after);
 	free(buffer);
 	return (line_after);
+}
+
+char *free_join(char *content, char *buffer)
+{
+	char *new;
+
+	new = ft_strjoin(content, buffer);
+	if (!new)
+		return (free(content), NULL);
+	free(content);
+	return(new);
 }
 
 char	*read_txt(int fd, char *txt)
@@ -82,6 +105,7 @@ char	*read_txt(int fd, char *txt)
 
 	txt = NULL;
 	temp = NULL;
+	
 	buffer = ft_calloc(sizeof(char), (BUFFER_SIZE + 1));
 	if (!buffer)
 		return (NULL);
@@ -92,9 +116,12 @@ char	*read_txt(int fd, char *txt)
 		if (bytes_read == -1)
 			return (free_strs(&txt, &temp, &buffer), NULL);
 		buffer[bytes_read] = '\0';
-		temp = ft_strjoin(txt, buffer);
-		free(txt);
-		txt = temp;
+		txt = free_join(txt, buffer);
+		if (!txt)
+		{
+			free(txt);
+			return (NULL);
+		}
 		if (ft_strchr(buffer, '\n'))
 			break;
 	}
@@ -107,17 +134,17 @@ char	*get_next_line(int fd)
 	static char	*buffer;
 	char 		*line;
 
+	if (BUFFER_SIZE <= 0 || fd < 0)
+		return (NULL);
 	buffer = read_txt(fd, buffer);
 	if (!buffer)
-	{
-		// printf("erreur buffer\n");
 		return (NULL);
-	}
 	line = one_line(buffer);
 	buffer = lines_after(buffer);
-	printf("line = %s\n", line); //problemes avec les printf
-	printf("buffer = %s\n", buffer);
-	printf("gros bozo de mes couilles = Maxence");
+	// printf("line = %s\n", line); 
+	// printf("buffer = %s\n", buffer);
+	if (buffer)
+		free(buffer);
 	return (line);
 }
 
@@ -125,16 +152,22 @@ int	main(void)
 {
 	int		fd;
 	char	*line;
+	static char *buffer = NULL;
 	
 	fd = open("text.txt", O_RDONLY);
-	if (fd)
-		printf("Ouvert avec succes\n");
-	else if (fd == -1)
-		// printf("Y'a un bleme la\n");
-		return (0);
-	line = get_next_line(fd);
-	// get_next_line(fd);
+	if (fd == -1)
+	{
+		perror("Erreur lors de l'ouverture du fichier");
+		return (1);
+	}	
+	while ((line = get_next_line(fd)))
+	{
+		printf("%s", line);
+		free(line);
+	} 
 	free(line);
+	if (buffer) 
+		free(buffer);
 	close(fd);
 	return (0);
 }

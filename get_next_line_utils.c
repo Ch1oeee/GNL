@@ -6,7 +6,7 @@
 /*   By: cmontaig <cmontaig@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/26 14:24:38 by cmontaig          #+#    #+#             */
-/*   Updated: 2024/12/04 13:19:29 by cmontaig         ###   ########.fr       */
+/*   Updated: 2024/12/07 05:08:44 by cmontaig         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ char	*ft_strjoin(char const *s1, char const *s2)
 	len_s2 = ft_strlen(s2);
 	new_str = ft_calloc(sizeof(char), (len_s1 + len_s2 + 1));
 	if (!new_str)
-		return (NULL);
+		return (free(new_str), NULL);
 	while (s1 && s1[i])
 	{
 		new_str[i] = s1[i];
@@ -63,7 +63,7 @@ void	*ft_calloc(size_t nmemb, size_t size)
 		return (NULL);
 	ptr = malloc(nmemb * size);
 	if (!ptr)
-		return (NULL);
+		return (free(ptr), NULL);
 	ft_bzero(ptr, nmemb * size);
 	return (ptr);
 }
@@ -87,7 +87,10 @@ size_t	ft_strlen(const char *s)
 	size_t	i;
 
 	i = 0;
+	if (!s)
+		return (0);
 	while (s && s[i])
 		i++;
 	return (i);
 }
+
