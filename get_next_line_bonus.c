@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: cmontaig <cmontaig@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/26 14:24:35 by cmontaig          #+#    #+#             */
-/*   Updated: 2024/12/11 13:18:20 by cmontaig         ###   ########.fr       */
+/*   Created: 2024/12/08 00:40:58 by cmontaig          #+#    #+#             */
+/*   Updated: 2024/12/11 11:45:27 by cmontaig         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 
 char	*one_line(char *buffer)
 {
@@ -101,35 +101,41 @@ char	*read_txt(int fd, char *txt)
 
 char	*get_next_line(int fd)
 {
-	static char	*buffer;
+	static char	*buffer[4096];
 	char		*line;
 
-	if (fd < 0 || BUFFER_SIZE <= 0)
+	if (fd < 0 || BUFFER_SIZE <= 0 || fd > 4096)
 		return (NULL);
-	buffer = read_txt(fd, buffer);
-	if (!buffer)
+	buffer[fd] = read_txt(fd, buffer[fd]);
+	if (!buffer[fd])
 		return (NULL);
-	line = one_line(buffer);
-	buffer = lines_after(buffer);
+	line = one_line(buffer[fd]);
+	buffer[fd] = lines_after(buffer[fd]);
 	return (line);
 }
 
-int	main(void)
- {
-	char	*line;
-	int fd;
+// int	main(void)
+// {
+// 	int		fd;
+// 	char	*line;
+// 	static char	*buffer = NULL;
 
-	fd = open("test.txt", O_RDONLY);
- 	if (fd == -1)
-	{
-		perror("Erreur lors de l'ouverture du fichier");
-	return (1);
-	}
-	while ((line = get_next_line(fd)))
- 	{
-	printf("%s", line);
-		free(line);
-} 
-	close(fd);
-	return (0);
-}
+// 	fd = open("test.txt", O_RDONLY);
+// 	if (fd == -1)
+// 	{
+// 		perror("Erreur lors de l'ouverture du fichier");
+// 		return (1);
+// 	}
+// 	// line = get_next_line(fd);
+// 	// printf("%s", line);
+// 	while ((line = get_next_line(fd)))
+// 	{
+// 		printf("%s", line);
+// 		free(line);
+// 	} 
+// 	free(line);
+// 	if (buffer) 
+// 		free(buffer);
+// 	close(fd);
+// 	return (0);
+// }
